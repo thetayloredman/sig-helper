@@ -63,10 +63,16 @@ const crypto = require('crypto');
         }
     } else if (i === 'sgn') {
         let privKey = new rsa(await fs.readFile((await inquirer.prompt({ type: 'input', name: 'path', message: 'Enter the path to the private key of the signature' })).path, 'utf8'));
-        let document = await fs.readFile((await inquirer.prompt({ type: 'input', name: 'path', message: 'Enter the raw document path' })).path, 'utf8');
+        let dPath = (await inquirer.prompt({ type: 'input', name: 'path', message: 'Enter the raw document path' })).path
+        let document = await fs.readFile(dPath, 'utf8');
 
         let madeSig = privKey.encryptPrivate(crypto.createHash('sha256').update(document).digest('hex'), 'base64');
         
         console.log(chalk.green.bold('Document signed. Signature: ') + madeSig);
+        console.log(chalk.green.bold('Wrote signed-' + dPath + ' with the signed document.'));
+        await fs.writeFile('signed-' + dPath, `========== BEGIN SIGNED DOCUMENT ==========
+${document}
+========== END SIGNED DOCUMENT ==========
+Signature: ${madeSig}`);
     }
 })();
